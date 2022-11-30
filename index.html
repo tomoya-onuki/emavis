@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://d3js.org/d3.v5.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3.layout.cloud.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script src="./lib/kuromoji.js"></script>
+    <link rel="stylesheet" href="style.css">
+    <title>Ema</title>
+</head>
+
+<body>
+    <h2>絵馬データの可視化</h2>
+
+    <div id="ui">
+        <h3>フィルタ</h3>
+        <div>
+            <span>単語の頻度の最小値:</span>
+            <input type="number" name="word-count-min" id="word-count-min" value="1" step="1" min="1" max="300">
+            <span>回</span>
+        </div>
+        <div id="shrine-filter"></div>
+        <div id="type-filter"></div>
+    </div>
+
+
+
+    <div id="word-cloud">
+        <h3>Word Cloud</h3>
+    </div>
+
+    <div id="bar">
+        <h3>Band Chart</h3>
+    </div>
+
+
+    <script src="./js/main.js"></script>
+</body>
+
+</html>
