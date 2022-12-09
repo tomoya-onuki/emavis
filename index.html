@@ -10,35 +10,51 @@
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
     <script src="./lib/kuromoji.js"></script>
     <link rel="stylesheet" href="style.css">
-    <title>Ema</title>
+    <script src="./js/main.js"></script>
+    <title>EmaVis</title>
 </head>
 
 <body>
-    <h2>絵馬データの可視化</h2>
-
+    
     <div id="ui">
-        <h3>フィルタ</h3>
-        <div>
-            <span>単語の頻度の最小値:</span>
-            <input type="number" name="word-count-min" id="word-count-min" value="1" step="1" min="1" max="300">
-            <span>回</span>
+        <h1>Emavis</h1>
+        <div class="box info">&copy;2022 Tomoya Onuki.</div>
+        <div class="box info">
+            Emavisは絵馬に書かれた願い事を可視化します。
         </div>
-        <div id="shrine-filter"></div>
-        <div id="type-filter"></div>
+
+        <div class="box">
+            <input type="number" name="word-count-min" id="word-count-min" value="1" step="1" min="1" max="300">
+            <span>回未満の単語を非表示にする</span>
+        </div>
+
+
+        <div id="shrine-filter" class="box">
+            <h2>寺社ID</h2>
+        </div>
+
+        <div id="highlight-filter" class="box">
+            <h2>ハイライト</h2>
+            <div>
+                <input type="text" id="highlight-word" placeholder="単語">
+                <input type="color" id="highlight-color" value="#3471eb">
+                <button id="highlight">色を付ける</button>
+                <button id="highlight-reset">リセット</button>
+            </div>
+        </div>
     </div>
-
-
-
-    <div id="word-cloud">
-        <h3>Word Cloud</h3>
+    
+    <div id="main">
+        <div id="load-box">
+            <div id="loader"></div>
+            <div>loading ...</div>
+        </div>
+        <div id="word-cloud">
+        </div>
+        
+        <div id="bar">
+        </div>
     </div>
-
-    <div id="bar">
-        <h3>Band Chart</h3>
-    </div>
-
-
-    <script src="./js/main.js"></script>
 </body>
 
 </html>

@@ -4,39 +4,25 @@ let wordCountThreshold = 1;
 
 const stmtIdx = 0;
 const shrineIdx = 1;
-const typeIdxs = [3, 4, 5];
 let shrineFilterList = {};
-let typeFilterList = {};
+let shrineList = [];
+let wordLists = {};
 
 $(function () {
 
-    var filename = './data/ema.csv';
+    var filename = './data/emadata.csv';
     readData(filename)
         .then((csvData) => {
             entryShrine(csvData);
-            entryType(csvData);
             init(csvData);
 
             $('.chbox-shrine').each(function () {
                 $(this).on('input', function () {
                     shrineFilterList[String($(this).val())] = $(this).prop("checked");
-                    init(csvData);
+                    // init(csvData);
+                    draw();
                 });
             });
-        });
-});
-
-function init(csvData) {
-    const text = gatherText(csvData); // テキストデータの集約
-
-    // 形態素解析
-    morphologicalAnalysis(text)
-        .then((wordList) => {
-            const csvWordCountList = wordCount(wordList);   // 単語のカウント
-            let data = csv2json(csvWordCountList);        // JSON形式に変換
-            data = sortJson(data);
-            drawWordCloud(data);    // ワードクラウドの描画
-            drawBarChart(data);
 
             // イベントリスナ
             $('#word-count-min').on('input', function () {
@@ -53,21 +39,66 @@ function init(csvData) {
                     }
 
                     $(this).val(wordCountThreshold);
-
-                    data = data.filter(d => d.count >= wordCountThreshold)
-                    drawWordCloud(data);
-                    drawBarChart(data);
+                    draw();
                 }
             });
+
+            $('#highlight').on('click', function () {
+                let targetWord = String($('#highlight-word').val());
+                const color = $('#highlight-color').val();
+                d3.select('#word-cloud').selectAll('text').each(function () {
+                    const flag = d3.select(this).style('fill') === 'rgb(79, 79, 79)';
+                    if (String(this.textContent) === targetWord) {
+                        if (flag) {
+                            d3.select(this).style('fill', color);
+                        } else {
+                            d3.select(this).style('fill', '#4f4f4f');
+                        }
+                    }
+                });
+            });
+
+            $('#highlight-reset').on('click', function () {
+                d3.select('#word-cloud').selectAll('text').each(function () {
+                    d3.select(this).style('fill', '#4f4f4f');
+                });
+            });
+
         });
+});
+
+function init(csvData) {
+    let promiseList = shrineList.map(shrine => {
+        let text = gatherText(csvData, shrine);
+        // 形態素解析
+        return morphologicalAnalysis(text, shrine);
+    });
+
+    Promise.all(promiseList).then(() => {
+        $('#load-box').hide();
+        draw();
+    });
 }
 
+function dump(data) {
+    let str = '';
+    let t = '';
+    let c = '';
+    data.forEach(d => {
+        str += `${d.text},${d.count}\n`
+        t += `${d.text}\n`
+        c += `${d.count}\n`
+    });
+    // console.log(str);
+    // console.log(t);
+    // console.log(c);
+}
 
-function gatherText(csvData) {
+function gatherText(csvData, shrine) {
     // 解説文の集約 (形態素解析をループするとエラーがでる)
     let text = '';
     for (cell of csvData) {
-        if (cell[stmtIdx] != '' && shrineFilterList[cell[shrineIdx]]) {
+        if (cell[stmtIdx] != '' && cell[shrineIdx] === shrine) {
             text += String(cell[stmtIdx] + '\n');
         }
     }
@@ -75,9 +106,9 @@ function gatherText(csvData) {
 }
 
 function entryShrine(csvData) {
-    let shrineList = [];
     let count = 0;
-    csvData.forEach(cell => {
+    csvData.forEach((cell,idx) => {
+
         if (cell[shrineIdx] != '' && !shrineList.includes(cell[shrineIdx])) {
             shrineList.push(cell[shrineIdx]);
             let $input = $('<input>')
@@ -87,9 +118,9 @@ function entryShrine(csvData) {
                 .addClass('chbox-shrine')
                 .val(cell[shrineIdx]);
             let $label = $('<label></label>')
-                .text(cell[shrineIdx])
+                .text(cell[shrineIdx].replace('st', '#00'))
                 .attr('for', 'shrine' + count);
-
+            
             let $item = $('<div></div>').append($input, $label);
             $('#shrine-filter').append($item);
 
@@ -99,35 +130,6 @@ function entryShrine(csvData) {
     });
 }
 
-function entryType(csvData) {
-    let typeList = [];
-    let count = 0;
-    csvData.forEach(cell => {
-        typeIdxs.forEach(typeIdx => {
-            if (cell[typeIdx].length > 1) {
-                if (!typeList.includes(cell[typeIdx])) {
-                    typeList.push(cell[typeIdx]);
-                    let $input = $('<input>')
-                        .attr('type', 'checkbox')
-                        .attr('id', 'type' + count)
-                        .prop('checked', true)
-                        .addClass('chbox-type')
-                        .val(cell[typeIdx]);
-                    let $label = $('<label></label>')
-                        .text(cell[typeIdx])
-                        .attr('for', 'type' + count);
-
-                    let $item = $('<div></div>').append($input, $label);
-                    $('#type-filter').append($item);
-
-                    typeFilterList[cell[typeIdx]] = true;
-                    count++;
-                }
-            }
-        })
-
-    });
-}
 
 function wordCount(wordList) {
     var csvWordCountList = [];
@@ -145,29 +147,6 @@ function wordCount(wordList) {
     return csvWordCountList;
 }
 
-
-// function layoutKeyWord(csvData) {
-//     // 単語のカウント
-//     var csvWordCountList = new Array();
-//     for (csvDatum of csvData) {
-//         keyWordIdx.forEach(idx => {
-//             var word = csvDatum[idx];
-//             if (word && word != '') {
-//                 if (!csvWordCountList[word]) { // 未出なら1で初期化   
-//                     csvWordCountList[word] = 1;
-//                 } else { // 既出ならインクリメント
-//                     csvWordCountList[word] += 1;
-//                 }
-//             }
-//         });
-//     }
-
-//     // JSON形式に変換
-//     data = csv2json(csvWordCountList);
-
-//     // ワードクラウドの描画
-//     drawWordCloud(data);
-// }
 
 function readData(csvFileName) {
     return new Promise((resolve) => {
@@ -188,58 +167,77 @@ function readData(csvFileName) {
 }
 
 
+function draw() {
+    let wordList = [];
+    shrineList.forEach(shrine => {
+        if (shrineFilterList[shrine]) {
+            wordList = wordList.concat(wordLists[shrine]);
+        }
+    });
+
+    const csvWordCountList = wordCount(wordList);   // 単語のカウント
+    let data = csv2json(csvWordCountList);        // JSON形式に変換
+    data = sortJson(data);
+    data = data.filter(d => d.count >= wordCountThreshold)
+    drawWordCloud(data);    // ワードクラウドの描画
+    drawBarChart(data);
+}
+
+
 function drawWordCloud(data) {
     // svgのリセット
     $('svg').remove();
     const margin = { top: 0, right: 0, bottom: 0, left: 0 };
-    var width = 600;
-    var height = 600;
-    // var width = data.length * 1.8;
-    // var height = data.length * 1.8;
-
-    // svgの生成
-    const svg = d3.select("#word-cloud").append("svg")
-        .attr("width", width - margin.left - margin.right)
-        .attr("height", height - margin.top - margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    var countMax = d3.max(data, function (d) { return d.count });
-    var paddingScale = d3.scaleLinear().domain([1, countMax]).range([1, 8]);
-    var fontSizeScale = (count) => Math.sqrt(count) * 10;
+    if (data.length > 0) {
+        var width = Math.log(data.length) * 100;
+        var height = Math.log(data.length) * 100;
+        console.log(Math.log(data.length))
 
 
-    // data = data.filter(d => d.count >= wordCountThreshold)
+        // svgの生成
+        const svg = d3.select("#word-cloud").append("svg")
+            .attr("width", width - margin.left - margin.right)
+            .attr("height", height - margin.top - margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    //　レイアウト
-    var layout = d3.layout.cloud()
-        .size([width, height])
-        .words(data)
-        .rotate(() => 0)
-        .fontSize((d) => fontSizeScale(d.count)) //単語の出現回数を文字サイズに反映
-        .padding((d) => paddingScale(d.count))
-        .spiral("archimedean")
-        // .spiral("rectangular")
-        .on("end", draw);
-    // 描画する
-    layout.start();
+        var countMax = d3.max(data, function (d) { return d.count });
+        var paddingScale = d3.scaleLinear().domain([1, countMax]).range([1, 8]);
+        var fontSizeScale = (count) => Math.sqrt(count) * 10;
 
 
-    // 描画規則の決定
-    function draw(words) {
-        svg.append("g")
-            .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
-            .selectAll("text")
-            .data(words)
-            .enter()
-            .append("text")
-            .style("font-size", (d) => d.size)
-            .attr("text-anchor", "middle")
-            .style("font-family", "san-serif")
-            .style("font-weight", "bold")
-            .style("fill", "#4f4f4f")
-            .attr("transform", (d) => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
-            .text((d) => d.text);
+        // data = data.filter(d => d.count >= wordCountThreshold)
+
+        //　レイアウト
+        var layout = d3.layout.cloud()
+            .size([width, height])
+            .words(data)
+            .rotate(() => 0)
+            .fontSize((d) => fontSizeScale(d.count)) //単語の出現回数を文字サイズに反映
+            .padding((d) => paddingScale(d.count))
+            .spiral("archimedean")
+            // .spiral("rectangular")
+            .on("end", draw);
+        // 描画する
+        layout.start();
+
+
+        // 描画規則の決定
+        function draw(words) {
+            svg.append("g")
+                .attr("transform", "translate(" + layout.size()[0] / 2 + "," + layout.size()[1] / 2 + ")")
+                .selectAll("text")
+                .data(words)
+                .enter()
+                .append("text")
+                .style("font-size", (d) => d.size)
+                .attr("text-anchor", "middle")
+                .style("font-family", "san-serif")
+                .style("font-weight", "bold")
+                .style("fill", "#4f4f4f")
+                .attr("transform", (d) => "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")")
+                .text((d) => d.text);
+        }
     }
 }
 
@@ -332,11 +330,12 @@ function sortJson(data) {
 }
 
 
-function morphologicalAnalysis(text) {
+function morphologicalAnalysis(text, shrine) {
     return new Promise((resolve) => {
         kuromoji.builder({ dicPath: DICT_PATH }).build((err, tokenizer) => {
             tokenize(text, tokenizer).then((wordList) => {
-                resolve(wordList);
+                wordLists[shrine] = wordList;
+                resolve();
             })
         })
     });
