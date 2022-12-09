@@ -11,6 +11,7 @@ let wordLists = {};
 $(function () {
 
     var filename = './data/emadata.csv';
+    
     readData(filename)
         .then((csvData) => {
             entryShrine(csvData);
