@@ -7,15 +7,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://d3js.org/d3.v5.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/holtzy/D3-graph-gallery@master/LIB/d3.layout.cloud.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.1.min.js" integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.6.1.min.js"
+        integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ=" crossorigin="anonymous"></script>
     <script src="./lib/kuromoji.js"></script>
+    <script src="./lib/chroma.min.js"></script>
     <link rel="stylesheet" href="style.css">
+
+    <script src="./js/morphological.js"></script>
+    <script src="./js/data.js"></script>
+    <script src="./js/chart.js"></script>
     <script src="./js/main.js"></script>
     <title>EmaVis</title>
 </head>
 
 <body>
-    
+
     <div id="ui">
         <h1>Emavis</h1>
         <div class="box info">&copy;2022 Tomoya Onuki.</div>
@@ -23,38 +29,89 @@
             Emavisは独自に収集した絵馬データベースの絵馬に書かれた願い事を可視化します。
         </div>
 
+        <h2>表示モード</h2>
         <div class="box">
-            <input type="number" name="word-count-min" id="word-count-min" value="1" step="1" min="1" max="300">
-            <span>回未満の単語を非表示にする</span>
+            <div>
+                <select id="chart-selector">
+                    <option value="wordcloud">Word Cloud</option>
+                    <option value="bar">Bar Chart</option>
+                </select>
+                <select id="analysis-selector">
+                    <option value="integration">統合</option>
+                    <option value="comparision">比較</option>
+                </select>
+            </div>
+
+            <div id="comp-option">
+                <select id="view-selector">
+                    <optgroup label="複数ビュー">
+                        <option value="juxta-all">寺社・対象別</option>
+                        <option value="juxta-st">寺社別</option>
+                        <option value="juxta-target">対象別</option>
+                    </optgroup>
+                </select>
+            </div>
         </div>
 
+        <div class="box">
+            <h2>フィルタ</h2>
+            <div class="box">
+                <div>
+                    <span>頻度 : </span>
+                    <input type="number" id="word-count-min-num" value="1" step="1" min="1">
+                    <span>回以上</span>
+                </div>
+                <input type="range" id="word-count-min-slider" value="1" step="1" min="1">
+            </div>
 
-        <div id="shrine-filter" class="box">
-            <h2>寺社ID</h2>
+            <div class="box">
+                <div>
+                    <span>順位 : </span>
+                    <input type="number" id="word-rank-min-num" step="1" min="1">
+                    <span>番目以上</span>
+                </div>
+                <input type="range" id="word-rank-min-slider" step="1" min="1">
+            </div>
+
+
+            <!-- <div class="box">
+                <input type="checkbox" name="sort" id="sort" checked>
+                <label for="sort">ソート</label>
+            </div> -->
+
+            <div class="flex-box">
+                <div id="shrine-filter">
+                    <h3>寺社ID</h3>
+                </div>
+
+                <div id="target-filter">
+                    <h3>対象</h3>
+                    <div>
+                        <input type="checkbox" id="self" class="target-chbox" checked><label for="self">自分</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="others" class="target-chbox" checked><label for="others">他者</label>
+                    </div>
+                </div>
+            </div>
         </div>
+
 
         <div id="highlight-filter" class="box">
             <h2>ハイライト</h2>
             <div>
-                <input type="text" id="highlight-word" placeholder="単語">
-                <input type="color" id="highlight-color" value="#3471eb">
-                <button id="highlight">色を付ける</button>
+                <input type="text" id="highlight-word" placeholder="入力例) 健康,安全,...">
+                <input type="checkbox" id="highlight">
+                <button>
+                    <label for="highlight" class="">ハイライト</label>
+                </button>
                 <button id="highlight-reset">リセット</button>
             </div>
         </div>
     </div>
-    
-    <div id="main">
-        <div id="load-box">
-            <div id="loader"></div>
-            <div>loading ...</div>
-        </div>
-        <div id="word-cloud">
-        </div>
-        
-        <div id="bar">
-        </div>
-    </div>
+
+    <div id="main"></div>
+
 </body>
 
 </html>

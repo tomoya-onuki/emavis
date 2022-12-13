@@ -11,34 +11,78 @@ h1 {
 
 h2 {
   font-size: 100%;
-  margin: 20px 0 0 0;
+  margin: 0 0 0 0;
+}
+
+h3 {
+  font-size: 90%;
+  color: #4f4f4f;
+  margin: 0;
+}
+
+input[type='checkbox'] {
+  margin: 0 4px 0 0;
 }
 
 #main {
   position: absolute;
-  margin: 0 0 0 0;
-  left: 250px;
-  width: calc(100vw - 250px);
-  /* display: flex; */
+  margin: 0px 0 0 0;
+  top: 30px;
+  left: 300px;
+  width: calc(100vw - 350px);
+
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  /* justify-content: space-around; */
 }
 
-#main div {
-  margin: 20px 0px 0 0;
+select {
+  padding: 5px 6px;
+  margin: 6px 0 0 0;
+  font-size: 80%;
+  width: 95px;
+}
+
+.view {
+  display: inline;
+  /* width: auto;  */
 }
 
 
 #ui {
   font-family: "Yu Gothic", "游ゴシック", "游ゴシック体", "YuGothic", Helvetica, sans-serif;
   position: fixed;
-  /* position: absolute; */
+  font-size: 90%;
   left: 0px;
   padding: 20px;
   border-radius: 5px;
   width: 200px;
 }
 
+.info {
+  font-size: 80%;
+}
 
-#word-count-min {
+#comp-option {
+  height: 33px;
+}
+
+#view-selector {
+  display: none;
+}
+
+#layout-selector {
+  display: none;
+}
+
+#word-count-min-slider,
+#word-rank-min-slider {
+  width: 100%;
+  padding: 0 0 0 5px;
+}
+#word-count-min-num,
+#word-rank-min-num {
   width: 50px;
   padding: 0 0 0 5px;
 }
@@ -63,20 +107,41 @@ label {
 }
 
 #ui .box {
-  margin: 0 0 20px 0;
+  margin: 0 0 15px 0;
+}
+
+#ui .flex-box {
+  display: flex;
+  margin: 0 0px 15px 0;
 }
 
 #highlight-word {
-  width: 100px;
-  height: 14px;
+  width: 170px;
+  height: 16px;
   padding: 2px 5px 2px 5px;
   margin: 0;
 }
-button {
+
+button{
   margin: 5px 0 0 0;
   width: 90px;
+  padding: 2px 0px;
 }
 
+#comp-option span {
+  width: 95px;
+  margin: 0;
+  padding: 0;
+}
+
+#highlight {
+  display: none;
+}
+button label {
+  width: auto;
+  margin: 0;
+  padding: 0;
+}
 
 #highlight-color {
   padding: 0;
@@ -116,9 +181,4 @@ button {
   100% {
     transform: rotate(360deg);
   }
-}
-
-
-.info {
-  font-size: 90%;
 }
