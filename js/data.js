@@ -4,6 +4,8 @@ class Data {
     shrineFilterList = {};
     targetList = ['self', 'other'];
     targetFilterList = { 'self': true, 'other': true };
+    // targetList = ['自分', '他者'];
+    // targetFilterList = { '自分': true, '他者': true };
     countMax = 0;
     wordList = [];
 

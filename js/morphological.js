@@ -2,52 +2,63 @@ const csvDataStart = 1;
 const DICT_PATH = "./lib/dict"; // kuromoji辞書
 const stmtIdx = 0;
 const shrineIdx = 1;
+const areaIdx = 3;
 const targetIdx = 2;
 
+$(function () {
+    $('#run').on('click', () => {
+        new Morphological(String($('#fpath').val()));
+    });
+});
+
 class Morphological {
-    shrineList = [];
+    shrineCodeList = [];
     wordLists = {};
 
     constructor(filename) {
+        console.log(`file : ${filename}`);
+        console.log('loading...');
         this.readData(filename)
             .then((csvData) => {
+                csvData = csvData.map(row => row.map(cell => cell.replace('\r', '')));
                 this.entryShrine(csvData);
+                console.log('done read data');
 
                 let promiseList = []
-                this.shrineList.forEach(shrine => {
-
-                    let text = this.gatherText(csvData, shrine, 'self');
-                    promiseList.push(this.morphologicalAnalysis(text, shrine, 'self'));
-                    text = this.gatherText(csvData, shrine, 'other');
-                    promiseList.push(this.morphologicalAnalysis(text, shrine, 'other'));
+                this.shrineCodeList.forEach((shrineCode, i) => {
+                    console.log(`setup morphological analysis ${Math.round(i / this.shrineCodeList.length * 100)}%`);
+                    let text = this.gatherText(csvData, shrineCode, 'self');
+                    promiseList.push(this.morphologicalAnalysis(text, shrineCode, 'self'));
+                    text = this.gatherText(csvData, shrineCode, 'other');
+                    promiseList.push(this.morphologicalAnalysis(text, shrineCode, 'other'));
                 });
 
-                Promise.all(promiseList).then(() => {
-                    $('#load-box').hide();
-                    this.dump();
-                });
+                console.log('run...');
+                Promise.all(promiseList)
+                    .then(() => this.dump());
             });
     }
 
 
     entryShrine(csvData) {
-        csvData.forEach((cell) => {
-            if (cell[shrineIdx] != '' && !this.shrineList.includes(cell[shrineIdx])) {
-                this.shrineList.push(cell[shrineIdx]);
+        csvData.forEach((row) => {
+            const code = row[shrineIdx] + '-' + row[areaIdx];
+            if (row[shrineIdx] != '' && row[areaIdx] != '' && !this.shrineCodeList.includes(code)) {
+                this.shrineCodeList.push(code);
             }
         });
     }
 
 
-    gatherText(csvData, shrine, target) {
+    gatherText(csvData, shrineCode, target) {
         // 解説文の集約 (形態素解析をループするとエラーがでる)
         let text = '';
-        for (let cell of csvData) {
-            // cell = cell.replace('\r', '');
-            if (cell[stmtIdx] != ''
-                && cell[shrineIdx] === shrine
-                && cell[targetIdx].replace('\r', '') === target) {
-                text += String(cell[stmtIdx] + '\n');
+        for (let row of csvData) {
+            let code = row[shrineIdx] + '-' + row[areaIdx];
+            if (row[stmtIdx] != ''
+                && code === shrineCode
+                && row[targetIdx].replace('\r', '') === target) {
+                text += String(row[stmtIdx] + '\n');
             }
         }
         return text;
@@ -85,7 +96,7 @@ class Morphological {
                     return tmp.shift();
                 } else { // 日本語の空白のみ削除
                     return val.replace(/(\s+[^A-Za-z]|[^A-Za-z]\s+)/g, (match) => {
-                        return match.replace(/\s+/g, '');
+                        return match.replace(/\s+/g, '').replace('\r', '');
                     })
                 }
             });
@@ -108,6 +119,7 @@ class Morphological {
     }
 
     tokenize(text, tokenizer) {
+        console.log('tokenize...');
         let wordList = [];
         return new Promise((resolve) => {
             const tokens = tokenizer.tokenize(text); // 解析データの取得
@@ -127,7 +139,7 @@ class Morphological {
 
 
     dump() {
-        console.log(this.wordLists)
+        // console.log(this.wordLists)
         let str = '{\n';
         let keylist = Object.keys(this.wordLists);
         keylist.forEach((key, i) => {

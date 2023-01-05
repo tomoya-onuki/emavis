@@ -1,5 +1,4 @@
 $(function () {
-    // let morphological = new Morphological('./data/emadata.csv');
     let chartList = [];
 
     new Data().read('./data/ema_worddata.json')

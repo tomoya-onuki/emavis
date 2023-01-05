@@ -346,7 +346,15 @@ class Chart {
                 .attr("font-size", "10px")
                 .attr("text-anchor", "start")
                 .attr("dominant-baseline", "text-before-edge")
-                .text(d => d);
+                .text(d => {
+                    if(d === 'self') {
+                        return '自分';
+                    } else if(d === 'other') {
+                        return '他者';
+                    } else {
+                        return d;
+                    }
+                });
 
             svg.append('text')
                 .text(this.label)
