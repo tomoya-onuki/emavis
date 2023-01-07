@@ -1,5 +1,6 @@
 body {
   margin-left: 20px;
+  background: #fcfcfc;
 }
 
 h1 {
@@ -26,15 +27,13 @@ input[type='checkbox'] {
 
 #main {
   position: absolute;
-  margin: 0px 0 0 0;
-  top: 30px;
-  left: 300px;
-  width: calc(100vw - 350px);
-
+  margin: 0 0 0 0;
+  top: 20px;
+  left: 250px;
+  /* width: calc(100vw - 400px); */
   display: flex;
   align-items: flex-start;
   flex-wrap: wrap;
-  /* justify-content: space-around; */
 }
 
 select {
@@ -68,19 +67,25 @@ select {
   height: 33px;
 }
 
-#view-selector {
-  display: none;
-}
 
-#layout-selector {
-  display: none;
-}
-
-#word-count-min-slider,
-#word-rank-min-slider {
+#word-rank-min-slider,
+#word-count-min-slider {
   width: 100%;
   padding: 0 0 0 5px;
 }
+
+#scale {
+  width: 95px;
+  /* margin: 0 5px 0 0; */
+  display: inline;
+  transform: translate(0, 3px);
+}
+#scale-label {
+  display: inline-block;
+  position: absolute;
+  transform: translate(2px, 6px);
+}
+
 #word-count-min-num,
 #word-rank-min-num {
   width: 50px;
@@ -115,18 +120,30 @@ label {
   margin: 0 0px 15px 0;
 }
 
+#shrine-filter {
+  width: 120px;
+}
+#target-filter,
+#area-filter {
+  width: 70px;
+  margin: 0 0 20px 0;
+}
+
+#shrine-all,
+#shrine-clear {
+  width: 50px;
+  font-size: 80%;
+  margin: 5px 0 0 0;
+}
+
 #highlight-word {
-  width: 170px;
+  width: 180px;
   height: 16px;
   padding: 2px 5px 2px 5px;
   margin: 0;
 }
 
-button{
-  margin: 5px 0 0 0;
-  width: 90px;
-  padding: 2px 0px;
-}
+
 
 #comp-option span {
   width: 95px;
@@ -136,6 +153,13 @@ button{
 
 #highlight {
   display: none;
+}
+
+button{
+  margin: 5px 0 0 0;
+  width: 95px;
+  padding: 2px 0px;
+  font-size: 80%;
 }
 button label {
   width: auto;

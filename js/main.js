@@ -10,9 +10,12 @@ $(function () {
                 dataSet.shrineList,
                 dataSet.shrineFilterList,
                 dataSet.targetList,
-                dataSet.targetFilterList));
+                dataSet.targetFilterList,
+                dataSet.areaList,
+                dataSet.areaFilterList
+            ));
 
-            
+
             initEventLister(dataSet);
             drawChart();
             $('#word-count-min-num').attr('max', dataSet.countMax - 1);
@@ -28,25 +31,32 @@ $(function () {
         $('.view').remove();
         const chartMode = String($('#chart-selector').find('option:selected').val());
         const viewMode = String($('#view-selector').find('option:selected').val());
-        const analysisMode = String($('#analysis-selector').find('option:selected').val());
+        const ratio = Number($('#scale').val()) / 100;
+        let maxList = [];
         chartList.forEach(chart => {
             chart.chartMode = chartMode;
             chart.viewMode = viewMode;
-            chart.analysisMode = analysisMode;
             chart.wordCountThreshold = parseInt($('#word-count-min-num').val());
             chart.rankThreshold = parseInt($('#word-rank-min-num').val());
+            chart.svgRatio = ratio;
+            chart.setup();
+            maxList.push(chart.countMax);
+        });
+        let max = Math.max(...maxList);
+        chartList.forEach(chart => {
+            chart.countMax = max;
             chart.draw();
         });
     }
 
     function convertDataStructure(dataSet) {
-        const analysisMode = String($('#analysis-selector').find('option:selected').val());
         const viewMode = String($('#view-selector').find('option:selected').val());
         const chartMode = String($('#chart-selector').find('option:selected').val());
         const base = String($('#base-selector').find('option:selected').val());
 
-        if (analysisMode === 'integration') {
-            chartList = [];
+        chartList = [];
+
+        if (viewMode === 'integration') {
             let chart = new Chart(
                 dataSet.data,
                 dataSet.countMax,
@@ -54,168 +64,202 @@ $(function () {
                 dataSet.shrineList,
                 dataSet.shrineFilterList,
                 dataSet.targetList,
-                dataSet.targetFilterList)
-            
+                dataSet.targetFilterList,
+                dataSet.areaList,
+                dataSet.areaFilterList
+            );
+
             chartList.push(chart);
         }
-        // else if (analysisMode === 'comp-st') {
-        //     chartList = [];
+        else if (viewMode === 'norm-shrine') {
+            dataSet.shrineList.forEach(shrine => {
+                let shrineFilterList = {};
+                shrineFilterList[shrine] = true;
+                let chart = new Chart(
+                    dataSet.data,
+                    dataSet.countMax,
+                    '#' + shrine,
+                    [shrine],
+                    shrineFilterList,
+                    dataSet.targetList,
+                    dataSet.targetFilterList,
+                    dataSet.areaList,
+                    dataSet.areaFilterList
+                );
+                chartList.push(chart);
+            });
+        }
+        else if (viewMode === 'norm-target') {
+            let targetListJa = ['自分', '他者'];
+            dataSet.targetList.forEach((target, i) => {
+                let targetFilterList = {};
+                targetFilterList[target] = true;
+                let chart = new Chart(
+                    dataSet.data,
+                    dataSet.countMax,
+                    targetListJa[i],
+                    dataSet.shrineList,
+                    dataSet.shrineFilterList,
+                    dataSet.targetList,
+                    targetFilterList,
+                    dataSet.areaList,
+                    dataSet.areaFilterList
+                );
+                chartList.push(chart);
+            });
+        }
+        else if (viewMode === 'norm-area') {
+            let areaListJa = ['都心', '地方'];
+            dataSet.areaList.forEach((area, i) => {
+                let areaFilterList = {};
+                areaFilterList[area] = true;
+                let chart = new Chart(
+                    dataSet.data,
+                    dataSet.countMax,
+                    areaListJa[i],
+                    dataSet.shrineList,
+                    dataSet.shrineFilterList,
+                    dataSet.targetList,
+                    dataSet.targetFilterList,
+                    dataSet.areaList,
+                    areaFilterList
+                );
+                chartList.push(chart);
+            });
+        }
+        else if (viewMode === 'key-shrine') {
+            // 寺社別の複数ビュー
+            dataSet.shrineList.forEach(shrine => {
+                let shrineFilterList = {};
+                shrineFilterList[shrine] = true;
+                let chart = new Chart(
+                    dataSet.data,
+                    dataSet.countMax,
+                    '#' + shrine,
+                    [shrine],
+                    shrineFilterList,
+                    dataSet.targetList,
+                    dataSet.targetFilterList,
+                    dataSet.areaList,
+                    dataSet.areaFilterList
+                );
 
-        //     if (viewMode === 'superpose' && chartMode !== 'wordcloud') {
-        //         // 寺社別の積み上げ
-        //         let chart = new Chart(
-        //             dataSet.data,
-        //             dataSet.countMax,
-        //             '',
-        //             dataSet.shrineList,
-        //             dataSet.shrineFilterList,
-        //             dataSet.targetList,
-        //             dataSet.targetFilterList)
-        //         chart.wordCountThreshold = (parseInt($('#word-count-min').val()));
-        //         chart.compElemList = chart.shrineList;
-        //         chartList.push(chart);
-        //     }
-        //     else {
-        //         // 寺社別の複数ビュー
-        //         dataSet.shrineList.forEach(shrine => {
-        //             let shrineFilterList = {};
-        //             shrineFilterList[shrine] = true;
-        //             let chart = new Chart(
-        //                 dataSet.data,
-        //                 dataSet.countMax,
-        //                 '#' + shrine,
-        //                 [shrine],
-        //                 shrineFilterList,
-        //                 dataSet.targetList,
-        //                 dataSet.targetFilterList)
-        //             chart.wordCountThreshold = (parseInt($('#word-count-min').val()));
-        //             chartList.push(chart);
-        //         });
-        //     }
-        // }
-        // else if (analysisMode === 'comp-target') {
-        //     chartList = [];
+                chart.compElemList = dataSet.targetList;
+                chartList.push(chart);
+            });
+        }
+        else if (viewMode === 'key-target') {
+            let targetListJa = ['自分', '他者'];
+            dataSet.targetList.forEach((target, i) => {
+                let targetFilterList = {};
+                targetFilterList[target] = true;
+                let chart = new Chart(
+                    dataSet.data,
+                    dataSet.countMax,
+                    targetListJa[i],
+                    dataSet.shrineList,
+                    dataSet.shrineFilterList,
+                    dataSet.targetList,
+                    targetFilterList,
+                    dataSet.areaList,
+                    dataSet.areaFilterList
+                );
 
-        //     if (viewMode === 'superpose' && chartMode !== 'wordcloud') {
-        //         let chart = new Chart(
-        //             dataSet.data,
-        //             dataSet.countMax,
-        //             '',
-        //             dataSet.shrineList,
-        //             dataSet.shrineFilterList,
-        //             dataSet.targetList,
-        //             dataSet.targetFilterList)
-        //         chart.wordCountThreshold = (parseInt($('#word-count-min').val()));
-        //         chart.compElemList = chart.targetList;
-        //         chartList.push(chart);
-        //     }
-        //     else {
-        //         let targetListJa = ['自分', '他者'];
-        //         dataSet.targetList.forEach((target, i) => {
-        //             let targetFilterList = {};
-        //             targetFilterList[target] = true;
-        //             let chart = new Chart(
-        //                 dataSet.data,
-        //                 dataSet.countMax,
-        //                 targetListJa[i],
-        //                 dataSet.shrineList,
-        //                 dataSet.shrineFilterList,
-        //                 dataSet.targetList,
-        //                 targetFilterList);
-        //             chart.wordCountThreshold = (parseInt($('#word-count-min').val()));
-        //             chartList.push(chart);
-        //         });
-        //     }
-        // }
-        else if (analysisMode === 'comparision') {
-            chartList = [];
+                chart.compElemList = chart.shrineList;
+                chartList.push(chart);
+            });
+        }
+        else if (viewMode === 'key-area') {
+            let areaListJa = ['都心', '地方'];
+            dataSet.areaList.forEach((area, i) => {
+                let areaFilterList = {};
+                areaFilterList[area] = true;
+                let chart = new Chart(
+                    dataSet.data,
+                    dataSet.countMax,
+                    areaListJa[i],
+                    dataSet.shrineList,
+                    dataSet.shrineFilterList,
+                    dataSet.targetList,
+                    dataSet.targetFilterList,
+                    dataSet.areaList,
+                    areaFilterList
+                );
 
-            if (viewMode === 'juxta-st') {
-                // 寺社別の複数ビュー
-                dataSet.shrineList.forEach(shrine => {
-                    let shrineFilterList = {};
-                    shrineFilterList[shrine] = true;
-                    let chart = new Chart(
-                        dataSet.data,
-                        dataSet.countMax,
-                        '#' + shrine,
-                        [shrine],
-                        shrineFilterList,
-                        dataSet.targetList,
-                        dataSet.targetFilterList)
-                    
-                    chart.compElemList = dataSet.targetList;
-                    chartList.push(chart);
-                });
-            }
-            else if (viewMode === 'juxta-target') {
-                let targetListJa = ['自分', '他者'];
+                chart.compElemList = dataSet.targetList;
+                chartList.push(chart);
+            });
+        }
+        else if (viewMode === 'set-shrine-target') {
+            let targetListJa = ['自分', '他者'];
+            dataSet.shrineList.forEach(shrine => {
+                let shrineFilterList = {};
+                shrineFilterList[shrine] = true;
+
                 dataSet.targetList.forEach((target, i) => {
                     let targetFilterList = {};
                     targetFilterList[target] = true;
                     let chart = new Chart(
                         dataSet.data,
                         dataSet.countMax,
-                        targetListJa[i],
+                        '#' + shrine + '-' + targetListJa[i],
+                        [shrine],
+                        shrineFilterList,
+                        dataSet.targetList,
+                        targetFilterList,
+                        dataSet.areaList,
+                        dataSet.areaFilterList
+                    );
+                    chartList.push(chart);
+                });
+            });
+        }
+        else if (viewMode === 'set-area-target') {
+            let areaListJa = ['都心', '地方'];
+            let targetListJa = ['自分', '他者'];
+            dataSet.areaList.forEach((area, i) => {
+                let areaFilterList = {};
+                areaFilterList[area] = true;
+                dataSet.targetList.forEach((target, j) => {
+                    let targetFilterList = {};
+                    targetFilterList[target] = true;
+                    let chart = new Chart(
+                        dataSet.data,
+                        dataSet.countMax,
+                        '#' + areaListJa[i] + '-' + targetListJa[j],
                         dataSet.shrineList,
                         dataSet.shrineFilterList,
                         dataSet.targetList,
-                        targetFilterList);
-                    
-                    chart.compElemList = chart.shrineList;
+                        targetFilterList,
+                        dataSet.areaList,
+                        areaFilterList
+                    );
                     chartList.push(chart);
                 });
-            }
-            else if (viewMode === 'juxta-all') {
-                let targetListJa = ['自分', '他者'];
-                dataSet.shrineList.forEach(shrine => {
-                    let shrineFilterList = {};
-                    shrineFilterList[shrine] = true;
-
-                    dataSet.targetList.forEach((target, i) => {
-                        let targetFilterList = {};
-                        targetFilterList[target] = true;
-                        let chart = new Chart(
-                            dataSet.data,
-                            dataSet.countMax,
-                            '#' + shrine + '-' + targetListJa[i],
-                            [shrine],
-                            shrineFilterList,
-                            dataSet.targetList,
-                            targetFilterList)
-                        
-                        chartList.push(chart);
-                    });
-                });
-            }
+            });
         }
     }
 
     function initEventLister(dataSet) {
         // イベントリスナ
-        const visibleLayoutSelector = () => {
-            let anaMode = String($('#analysis-selector').find('option:selected').val());
-
-            if (anaMode.indexOf('comp') === 0) {
-                $('#view-selector').show();
-            } else {
-                $('#view-selector').hide();
-            }
-        }
-
         $('#chart-selector').on('input', function () {
-            visibleLayoutSelector();
-            drawChart();
-        });
-
-        $('#analysis-selector').on('input', function () {
-            visibleLayoutSelector();
-            convertDataStructure(dataSet);
             drawChart();
         });
 
         $('#view-selector').on('input', function () {
             convertDataStructure(dataSet);
+            drawChart();
+        });
+
+        $('#redraw').on('click', function() {
+            drawChart();  
+        });
+
+        $('#scale').on('input', function() {
+            const val = Number($(this).val());
+            $(this).next().text(`${val}%`);
+        });
+        $('#scale').on('change', function() {
             drawChart();
         });
 
@@ -261,6 +305,24 @@ $(function () {
                 drawChart();
             });
         });
+        $('#shrine-all').on('click', function () {
+            $('.chbox-shrine').prop('checked', true);
+            chartList.forEach(chart => {
+                chart.shrineList.forEach(shrine => {
+                    chart.shrineFiltering(shrine, true);
+                });
+            });
+            drawChart();
+        });
+        $('#shrine-clear').on('click', function () {
+            $('.chbox-shrine').prop('checked', false);
+            chartList.forEach(chart => {
+                chart.shrineList.forEach(shrine => {
+                    chart.shrineFiltering(shrine, false);
+                });
+            });
+            drawChart();
+        });
 
         $('#self').on('input', function () {
             chartList.forEach(chart => chart.targetFiltering('self', $(this).prop('checked')));
@@ -270,6 +332,17 @@ $(function () {
             chartList.forEach(chart => chart.targetFiltering('other', $(this).prop('checked')));
             drawChart();
         });
+
+        $('#urban').on('input', function () {
+            chartList.forEach(chart => chart.areaFiltering('U', $(this).prop('checked')));
+            drawChart();
+        });
+        $('#rural').on('input', function () {
+            chartList.forEach(chart => chart.areaFiltering('R', $(this).prop('checked')));
+            drawChart();
+        });
+
+
         $('#highlight-word').on('input', function () {
             $('#highlight').prop('checked', false);
         });

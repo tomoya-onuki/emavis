@@ -24,31 +24,39 @@
     <div id="ui">
         <h1>Emavis</h1>
         <div class="box info">&copy;2022 Tomoya Onuki.</div>
-        <div class="box info">
+        <!-- <div class="box info">
             Emavisは独自に収集した絵馬データベースの絵馬に書かれた願い事を可視化します。
-        </div>
+        </div> -->
 
-        <h2>表示モード</h2>
+        <h2>表示</h2>
         <div class="box">
-            <div>
+            <div class="box">
                 <select id="chart-selector">
                     <option value="wordcloud">Word Cloud</option>
                     <option value="bar">Bar Chart</option>
                 </select>
-                <select id="analysis-selector">
-                    <option value="integration">統合</option>
-                    <option value="comparision">比較</option>
-                </select>
-            </div>
-
-            <div id="comp-option">
                 <select id="view-selector">
-                    <optgroup label="複数ビュー">
-                        <option value="juxta-all">寺社・対象別</option>
-                        <option value="juxta-st">寺社別</option>
-                        <option value="juxta-target">対象別</option>
+                    <option value="integration">統合</option>
+                    <optgroup label="単純比較">
+                        <option value="norm-shrine">寺社別</option>
+                        <option value="norm-target">対象別</option>
+                        <option value="norm-area">地域別</option>
+                    </optgroup>
+                    <optgroup label="多次元比較(並置)">
+                        <option value="set-shrine-target">寺社&times;対象</option>
+                        <option value="set-area-target">地域&times;対象</option>
+                    </optgroup>
+                    <optgroup label="多次元比較(埋め込み)">
+                        <option value="key-shrine">寺社&rarr;対象</option>
+                        <option value="key-area">地域&rarr;対象</option>
+                        <option value="key-target">対象&rarr;寺社</option>
                     </optgroup>
                 </select>
+                
+                <button id="redraw">再レイアウト</button>
+
+                <input type="range" id="scale" min="1" max="100" value="100" step="1">
+                <span id="scale-label">100%</span>
             </div>
         </div>
 
@@ -81,15 +89,31 @@
             <div class="flex-box">
                 <div id="shrine-filter">
                     <h3>寺社ID</h3>
+                    <div id="shrine-list"></div>
+                    <button id="shrine-all">全選択</button>
+                    <button id="shrine-clear">全解除</button>
                 </div>
 
-                <div id="target-filter">
-                    <h3>対象</h3>
-                    <div>
-                        <input type="checkbox" id="self" class="target-chbox" checked><label for="self">自分</label>
+                <div>
+                    <div id="target-filter">
+                        <h3>対象</h3>
+                        <div>
+                            <input type="checkbox" id="self" class="target-chbox" checked><label for="self">自分</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="others" class="target-chbox" checked><label
+                                for="others">他者</label>
+                        </div>
                     </div>
-                    <div>
-                        <input type="checkbox" id="others" class="target-chbox" checked><label for="others">他者</label>
+                    <div id="area-filter">
+                        <h3>地域</h3>
+                        <div>
+                            <input type="checkbox" id="urban" class="area-chbox" checked><label for="urban">都心</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="rural" class="area-chbox" checked><label
+                                for="rural">地方</label>
+                        </div>
                     </div>
                 </div>
             </div>
