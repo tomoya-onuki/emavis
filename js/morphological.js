@@ -40,9 +40,20 @@ class Morphological {
     }
 
 
+
+    encodeShrine(row) {
+        return row[shrineIdx].replace('st', 'st00') + row[areaIdx].charAt(0).toUpperCase();
+    }
+    decodeShrine(shrineCode) {
+        return shrineCode.replace('00', '')
+            .replace('U', '-urban')
+            .replace('R', '-rural');
+    }
+
+
     entryShrine(csvData) {
         csvData.forEach((row) => {
-            const code = row[shrineIdx] + '-' + row[areaIdx];
+            const code = this.encodeShrine(row);
             if (row[shrineIdx] != '' && row[areaIdx] != '' && !this.shrineCodeList.includes(code)) {
                 this.shrineCodeList.push(code);
             }
@@ -54,7 +65,7 @@ class Morphological {
         // 解説文の集約 (形態素解析をループするとエラーがでる)
         let text = '';
         for (let row of csvData) {
-            let code = row[shrineIdx] + '-' + row[areaIdx];
+            let code = this.encodeShrine(row);
             if (row[stmtIdx] != ''
                 && code === shrineCode
                 && row[targetIdx].replace('\r', '') === target) {

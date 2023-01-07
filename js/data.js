@@ -4,8 +4,8 @@ class Data {
     shrineFilterList = {};
     targetList = ['self', 'other'];
     targetFilterList = { 'self': true, 'other': true };
-    // targetList = ['自分', '他者'];
-    // targetFilterList = { '自分': true, '他者': true };
+    areaList = ['U', 'R'];
+    areaFilterList = { 'U': true, 'R': true };
     countMax = 0;
     wordList = [];
 
@@ -22,7 +22,6 @@ class Data {
                     $('#word-cloud').css('display', 'flex');
                     this.entryShrine();
 
-
                     const wordArr = this.wordArr();
                     const count = this.wordCount(wordArr);
                     this.countMax = this.max(count);
@@ -32,29 +31,32 @@ class Data {
         });
     }
 
+
     entryShrine() {
         let me = this;
         Object.keys(this.data)
             .sort()
-            .forEach(shrine => {
-                if (!me.shrineList.includes(shrine)) {
-                    this.shrineList.push(shrine);
-                    this.shrineFilterList[shrine] = true;
+            .forEach(shrineCode => {
+
+                if (!me.shrineList.includes(shrineCode)) {
+                    this.shrineList.push(shrineCode);
+                    this.shrineFilterList[shrineCode] = true;
+
                     let $input = $('<input>')
                         .attr('type', 'checkbox')
-                        .attr('id', shrine)
-                        .attr('name', shrine)
+                        .attr('id', shrineCode)
+                        .attr('name', shrineCode)
                         .prop('checked', true)
                         .addClass('chbox-shrine');
 
                     let $label = $('<label></label>')
-                        .text('#' + shrine)
-                        .attr('for', shrine);
+                        .text('#' + shrineCode)
+                        .attr('for', shrineCode);
 
                     let $item = $('<div></div>').append($input, $label);
-                    $('#shrine-filter').append($item);
+                    $('#shrine-list').append($item);
 
-                    this.shrineFilterList[shrine] = true;
+                    this.shrineFilterList[shrineCode] = true;
                 }
             });
     }
